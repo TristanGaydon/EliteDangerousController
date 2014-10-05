@@ -15,11 +15,6 @@
 
 USB     Usb;
 USBHub  Hub1(&Usb);
-/*
-USBHub  Hub2(&Usb);
-USBHub  Hub3(&Usb);
-USBHub  Hub4(&Usb);
-*/
 
 HIDUniversal Hid1(&Usb);
 HIDUniversal Hid2(&Usb);
@@ -52,8 +47,6 @@ enum modeTransition_t {
 
 modeTransition_t modetransition;
 int SENSOR_BUCKETS = 5;
-
-
 
 static const int flagbit1 = 0x1;
 static const int flagbit2 = 0x2;
@@ -301,11 +294,15 @@ void ThrustmasterJoystickEvents::OnGamePadChanged(const ThrustmasterGamePadEvent
 {
 	Serial.println("Thrustmaster");
 
+	// Joystick is actually rotated 90 degrees in current setup, so thrust is actually x not y
 	uint8_t x1 = evt->x1;
 	uint8_t x2 = evt->x2;
 	uint16_t x = ((uint16_t)x2 << 8) | x1;
 	x = x << 2;
 
+	Joystick.Xrotate(x);	// Throttle
+
+	/*
 	uint8_t y1 = evt->y1;
 	uint8_t y2 = evt->y2;
 	uint16_t y = ((uint16_t)y2 << 8) | y1;
@@ -313,6 +310,7 @@ void ThrustmasterJoystickEvents::OnGamePadChanged(const ThrustmasterGamePadEvent
 
 	Joystick.Yrotate(x);
 	Joystick.Zrotate(y);
+	*/
 
 	/*
 	Serial.print("X:");
@@ -357,155 +355,113 @@ void ThrustmasterJoystickEvents::OnGamePadChanged(const ThrustmasterGamePadEvent
 
 void SaitekJoystickEvents::OnGamePadChanged(const SaitekGamePadEventData *evt)
 {
-	Serial.println("Saitek");
+	Joystick.X(getX(evt));				// Roll
+	Joystick.Y(getY(evt));				// Pitch
+	Joystick.Z(getZ(evt));				// Yaw
 
+	// XRotate (throttle) comes from thrustmaster
+	// Joystick.Xrotate(getXRotate(evt));	// Throttle
+	Joystick.Yrotate(getYRotate(evt));	// Thumbstick up/down
+	Joystick.Zrotate(getZRotate(evt));	// Thumbstick left/right
+
+	Joystick.slider0(getSlider0(evt));	// Thumb trim
+	Joystick.slider1(getSlider1(evt));	// Thumb slider
+
+	setButtons(evt);
+
+	setPOV1(evt);						// Joystick pov 1
+	setPOV2(evt);						// Joystick pov 2
+	setPOV3(evt);						// Throttle pov 3
+	// setPOV4(evt);					// Throttle thumbstick pov 4. Use setPOV4 if using the thumbstick as a POV rather than two axes
+
+	printDebug();
+}
+
+inline uint16_t getX(const SaitekGamePadEventData *evt)
+{
 	uint8_t x1 = evt->b1;
 	uint8_t x2 = evt->b2;
 	uint16_t x = ((uint16_t)x2 << 8) | x1;
 	x = x & 0x3FF;
-	x = x << 6;
+	return x;
+}
 
-
-	Serial.print("X: ");
-	Serial.print(x);
-	Serial.print(" ");
-	PrintBin<uint16_t>(x, 0x10);
-
+inline uint16_t getY(const SaitekGamePadEventData *evt)
+{
 	uint8_t y1 = (evt->b2 >> 2) << 2;
 	uint8_t y2 = evt->b3 & 0xF;
 	uint16_t y = ((uint16_t)y2 << 8) | y1;
+	y = y >> 2;
+	return y;
+}
 
-	y = y << 4;
-
-	Serial.print(" Y: ");
-	Serial.print(y);
-	Serial.print(" ");
-	PrintBin<uint16_t>(y, 0x10);
-
-	// Rotate
+inline uint16_t getZ(const SaitekGamePadEventData *evt)
+{
 	uint8_t r1 = (evt->b3 >> 6) << 6;
 	uint8_t r2 = evt->b4;
 	uint16_t rotate = (((uint16_t)r2 << 8) | r1);
-	Serial.print(" Rotate: ");
-	Serial.print(rotate);
+	rotate = rotate >> 6;
+	return rotate;
+}
 
-	// Throttle
-	uint16_t z = ((uint16_t)evt->b5 << 8);
+inline uint8_t getXRotate(const SaitekGamePadEventData *evt)
+{
+	return evt->b5;
+}
 
-	Serial.print(" Z: ");
-	Serial.print(z);
+inline uint8_t getYRotate(const SaitekGamePadEventData *evt)
+{
+	uint8_t moveud = evt->b15;
+	moveud = moveud >> 4;
+	return moveud;
+}
 
-	// Thumb Rotary
-	uint16_t thumbTrim = ((uint16_t)evt->b6 << 8);
-	Serial.print(" Thumb Trim: ");
-	Serial.print(thumbTrim);
+inline uint8_t getZRotate(const SaitekGamePadEventData *evt)
+{
+	return evt->b15 & 0xF;
+}
 
-	// Index Rotary
-	uint16_t indexTrim = ((uint16_t)evt->b7 << 8);
-	Serial.print(" Index Trim: ");
-	Serial.print(indexTrim);
+inline uint8_t getSlider0(const SaitekGamePadEventData *evt)
+{
+	return evt->b6;
+}
 
-	int newSensorRange = GetAxisBucket(evt->b7, SENSOR_BUCKETS);
+inline uint8_t getSlider1(const SaitekGamePadEventData *evt)
+{
+	return evt->b8;
+}
 
-	if (newSensorRange > oldSensorRange)
-	{
-		Joystick.button(19, false);
-		Joystick.button(18, true);	// Index Dial Clockwise, increse sensor range
-	}
-	else if (newSensorRange < oldSensorRange)
-	{
-		Joystick.button(18, false);
-		Joystick.button(19, true);	// Index Dial Clockwise	Anticlockwise, decrease senor range
-	}
-	else
-	{
-		Joystick.button(18, false);
-		Joystick.button(19, false);
-	}
+inline void setButtons(const SaitekGamePadEventData *evt)
+{
+	/******************** Joystick buttons ****************************************************/
+	Joystick.button(1, evt->b9 & flagbit1 == flagbit1);			// Main trigger
+	Joystick.button(2, (evt->b9 & flagbit2) == flagbit2);		// Safety button
+	Joystick.button(3, (evt->b9 & flagbit3) == flagbit3);		// button "A"
+	Joystick.button(4, (evt->b9 & flagbit4) == flagbit4);		// button "B"
+	Joystick.button(5, (evt->b9 & flagbit5) == flagbit5);		// button "C"
+	Joystick.button(6, (evt->b9 & flagbit6) == flagbit6);		// Pinkie switch
+	setModeTransition(evt);										// Buttons 7 and 8 are mapped to state transitions of the mode switch
+	Joystick.button(9, (evt->b10 & flagbit1) == flagbit1);		// Base Button 1 Up
+	Joystick.button(10, (evt->b10 & flagbit2) == flagbit2);		// Base Button 1 Down
+	Joystick.button(11, (evt->b10 & flagbit3) == flagbit3);		// Base Button 2 Up
+	Joystick.button(12, (evt->b10 & flagbit4) == flagbit4);		// Base Button 2 Down
+	Joystick.button(13, (evt->b10 & flagbit5) == flagbit5);		// Base Button 3 Up
+	Joystick.button(14, (evt->b10 & flagbit6) == flagbit6);		// Base Button 3 Down
 
-	oldSensorRange = newSensorRange;
+	/******************** Throttle buttons ****************************************************/
+	Joystick.button(15, (evt->b10 & flagbit8) == flagbit8);		// Mouse button
+	Joystick.button(16, (evt->b9 & flagbit7) == flagbit7);		// Small Thumb Button "D"
+	Joystick.button(17, (evt->b9 & flagbit8) == flagbit8);		// Large index button "E"
+	setIndexTrimButtons(evt);									// Index dial maps to button 18 (clockwise) and button 19 (anticlockwise)
+	Joystick.button(20, (evt->b11 & flagbit1) == flagbit1);		// Wheel Down
+	Joystick.button(21, (evt->b11 & flagbit2) == flagbit2);		// Wheel Up
+	Joystick.button(22, (evt->b11 & flagbit3) == flagbit3);		// Wheel Click
+	Joystick.button(23, (evt->b12 & flagbit7) == flagbit7);		// Large thumb Button "i"
+	Joystick.button(24, (evt->b12 & flagbit8) == flagbit8);		// Throttle base "function button"
+}
 
-	// Thumb Slider
-	uint16_t sliderTrim = ((uint16_t)evt->b8 << 8);
-	Serial.print(" Thumb Slider: ");
-	Serial.print(sliderTrim);
-
-	// Mapped to 16 bits in case we want to use as an axis again
-	/*
-	uint16_t movelr = (uint16_t)evt->b15;
-	movelr = movelr << 12;
-	Serial.print(" Move left/right: ");
-	Serial.print(movelr);
-	Serial.print(" Move left/right: : ");
-	PrintBin<uint16_t>(movelr, 0x80);
-
-	uint16_t moveud = (((uint16_t)evt->b15) >> 4) << 12;
-	Serial.print(" Move up/down: ");
-	Serial.print(moveud);
-	Serial.print(" Move up/down: ");
-	PrintBin<uint16_t>(moveud, 0x80);
-	*/
-
-	// Set thumbstick to be POV4
-
-
-	Serial.println("");
-	Serial.print(" B15: ");
-	PrintBin<uint8_t>(evt->b15, 0x80);
-
-	uint8_t tsY = evt->b15 >> 4;
-	uint8_t tsX = evt->b15 & 0xF;
-
-	Serial.print(" tsY: ");
-	PrintBin<uint8_t>(tsY, 0x80);
-	Serial.print(" ");
-	Serial.print(tsY);
-
-	Serial.print(" tsX: ");
-	PrintBin<uint8_t>(tsX, 0x80);
-	Serial.print(" ");
-	Serial.print(tsX);
-
-	int tsAngle = getAngle(tsX, tsY);
-
-	Serial.print(" Setting thumbstick POV hat to Angle :");
-	Serial.print(tsAngle);
-	int val = Joystick.hat(2, tsAngle);
-	Serial.println(" val returned from hat: ");
-	Serial.println(val);
-	Serial.println("");
-
-	Joystick.X(x);
-	Joystick.Y(y);
-	Joystick.Z(rotate);
-	Joystick.Xrotate(z);
-
-	// Joystick.Yrotate(moveud);
-	// Joystick.Zrotate(movelr);
-
-	// Joystick.slider(1, thumbTrim);
-	// Joystick.slider(2, indexTrim);
-
-	// Buttons
-
-	// Main fire, direct power to weapons, then fire, the direct power back - to where? Need to maintain history...
-	if (evt->b9 & flagbit1 == flagbit1)
-	{
-		Joystick.hat(4, 90);
-		Joystick.button(1, true);
-		Joystick.hat(4, 180);
-	}
-	else
-	{
-		Joystick.button(1, false);
-	}
-
-	Joystick.button(2, (evt->b9 & flagbit2) == flagbit2);
-	Joystick.button(3, (evt->b9 & flagbit3) == flagbit3);
-	Joystick.button(4, (evt->b9 & flagbit4) == flagbit4);
-	Joystick.button(5, (evt->b9 & flagbit5) == flagbit5);
-	Joystick.button(6, (evt->b9 & flagbit6) == flagbit6);
-
+inline void setModeTransition(const SaitekGamePadEventData *evt)
+{
 	// Mode 1->2
 	// Mode 3->2
 	// mode switch
@@ -516,9 +472,6 @@ void SaitekJoystickEvents::OnGamePadChanged(const SaitekGamePadEventData *evt)
 	newMode = GetCurrentMode(oldMode, isMode1, isMode2, isMode3);
 
 	GetModeTransition(oldMode, newMode);
-
-	Serial.print(" modetransition: ");
-	Serial.print(modetransition);
 
 	switch (modetransition)
 	{
@@ -539,30 +492,78 @@ void SaitekJoystickEvents::OnGamePadChanged(const SaitekGamePadEventData *evt)
 	}
 
 	oldMode = newMode;
+}
 
+inline void setIndexTrimButtons(const SaitekGamePadEventData *evt)
+{
+	// Index Rotary
+	uint16_t indexTrim = ((uint16_t)evt->b7 << 8);
+
+	int newSensorRange = GetAxisBucket(evt->b7, SENSOR_BUCKETS);
+
+	if (newSensorRange > oldSensorRange)
+	{
+		Joystick.button(19, false);
+		Joystick.button(18, true);	// Index Dial Clockwise, increse sensor range
+	}
+	else if (newSensorRange < oldSensorRange)
+	{
+		Joystick.button(18, false);
+		Joystick.button(19, true);	// Index Dial Clockwise	Anticlockwise, decrease senor range
+	}
+	else
+	{
+		Joystick.button(18, false);
+		Joystick.button(19, false);
+	}
+
+	oldSensorRange = newSensorRange;
+}
+
+inline void printDebug()
+{
+	// Debugging serial print statements
 	/*
-	Joystick.button(30, (evt->b12 & flagbit6) == flagbit6); // 1
-	Joystick.button(29, (evt->b12 & flagbit5) == flagbit5); // 2
-	Joystick.button(28, (evt->b12 & flagbit4) == flagbit4); // 3
+	Serial.print("X: ");
+	Serial.print(x);
+	Serial.print(" ");
+	PrintBin<uint16_t>(x, 0x10);
+	Serial.println("");
+	Serial.print(" Y: ");
+	Serial.print(y);
+	Serial.print(" ");
+	PrintBin<uint16_t>(y, 0x10);
+	Serial.print(" Rotate: ");
+	Serial.print(rotate);
+	Serial.print(" Z: ");
+	Serial.print(z);
+	Serial.print(" Thumb Trim: ");
+	Serial.print(thumbTrim);
+	Serial.print(" Thumb Slider: ");
+	Serial.print(sliderTrim);
+	Serial.print(" Move up/down: ");
+	Serial.print(moveud);
+	Serial.print(" Move up/down: ");
+	PrintBin<uint8_t>(moveud, 0x80);
+	Serial.print(" Move left/right: ");
+	Serial.print(movelr);
+	Serial.print(" Move left/right: : ");
+	PrintBin<uint8_t>(movelr, 0x80);
+	Serial.print(" Index Trim: ");
+	Serial.print(indexTrim);
+	Serial.print(" modetransition: ");
+	Serial.print(modetransition);
+	Serial.println("");
 	*/
+}
 
-	Joystick.button(9, (evt->b10 & flagbit1) == flagbit1);		// Base Button 1 Up
-	Joystick.button(10, (evt->b10 & flagbit2) == flagbit2);		// Base Button 1 Down
-	Joystick.button(11, (evt->b10 & flagbit3) == flagbit3);		// Base Button 2 Up
-	Joystick.button(12, (evt->b10 & flagbit4) == flagbit4);		// Base Button 2 Down
-	Joystick.button(13, (evt->b10 & flagbit5) == flagbit5);		// Base Button 3 Up
-	Joystick.button(14, (evt->b10 & flagbit6) == flagbit6);		// Base Button 3 Down
 
-	// Throttle buttons
-	// Joystick.button(15, (evt->b10 & flagbit7) == flagbit7); Fire 2nd depression, don't map for now, maybe do something clever with shields
-	Joystick.button(15, (evt->b10 & flagbit8) == flagbit8);		// Mouse button
-	Joystick.button(16, (evt->b9 & flagbit7) == flagbit7);		// Small Thumb Button
-	Joystick.button(17, (evt->b9 & flagbit8) == flagbit8);
+//*****************************************************************************/
+// POV Mappings 
+//*****************************************************************************/
 
-	Joystick.button(20, (evt->b11 & flagbit1) == flagbit1);		// Wheel Down
-	Joystick.button(21, (evt->b11 & flagbit2) == flagbit2);		// Wheel Up
-	Joystick.button(22, (evt->b11 & flagbit3) == flagbit3);		// Wheel Click
-
+inline void setPOV1(const SaitekGamePadEventData *evt)
+{
 	// POV Hat 1
 	uint8_t pov1 = evt->b14;
 
@@ -602,8 +603,10 @@ void SaitekJoystickEvents::OnGamePadChanged(const SaitekGamePadEventData *evt)
 	{
 		Joystick.hat(4, -1);
 	}
+}
 
-
+inline void setPOV2(const SaitekGamePadEventData *evt)
+{
 	// TODO Make this do the 45 deg properly
 	if ((evt->b11 & flagbit4) == flagbit4)
 	{
@@ -625,8 +628,10 @@ void SaitekJoystickEvents::OnGamePadChanged(const SaitekGamePadEventData *evt)
 	{
 		Joystick.hat(3, -1);
 	}
+}
 
-
+inline void setPOV3(const SaitekGamePadEventData *evt)
+{
 	// Throttle POV
 	if ((evt->b11 & flagbit8) == flagbit8)
 	{
@@ -648,95 +653,11 @@ void SaitekJoystickEvents::OnGamePadChanged(const SaitekGamePadEventData *evt)
 	{
 		Joystick.hat(1, -1);
 	}
-
-	Joystick.button(31, (evt->b12 & flagbit7) == flagbit7);
-	Joystick.button(61, (evt->b12 & flagbit8) == flagbit8);
-	Joystick.button(33, (evt->b13 & flagbit1) == flagbit1);
-	Joystick.button(34, (evt->b13 & flagbit2) == flagbit2);
-	Joystick.button(35, (evt->b13 & flagbit3) == flagbit3);
-	Joystick.button(36, (evt->b13 & flagbit4) == flagbit4);
-	Joystick.button(37, (evt->b13 & flagbit5) == flagbit5);
-	Joystick.button(38, (evt->b13 & flagbit6) == flagbit6);
-	Joystick.button(39, (evt->b13 & flagbit7) == flagbit7);
-
-
-	// Joystick.slider(1, evt->b6);
-	// Joystick.slider(2, evt->b7);
-	// Joystick.slider(3, evt->b6);
-
-	/*
-	Joystick.slider(1, analogRead(A6) * 64);
-	Joystick.slider(2, analogRead(A7) * 64);
-	Joystick.slider(3, analogRead(A8) * 64);
-	Joystick.slider(4, analogRead(A9) * 64);
-	Joystick.slider(5, analogRead(A10) * 64);
-	Joystick.slider(6, analogRead(A11) * 64);
-	Joystick.slider(7, analogRead(A12) * 64);
-	Joystick.slider(8, analogRead(A13) * 64);
-	*/
 }
 
-inline double to_degrees(double radians) {
-	return radians*(180.0 / M_PI);
-}
-
-int getAngle(uint8_t tsX, uint8_t tsY)
-{
-	int tsOx;
-	int tsOy;
-
-	if (tsX > 0x8 && tsY < 0x8)
-	{
-		// Q1
-		Serial.println(" Q1 ");
-		tsOx = tsX - 0x8;
-		tsOy = 0x8 - tsY;
-
-		if (tsOy == 0)
-			return 90;
-
-		return to_degrees(atan(tsOx / tsOy));
-	}
-	else if (tsX >= 0x8 && tsY >= 0x8)
-	{
-		// Q2
-		Serial.println(" Q2 ");
-		tsOx = tsX - 0x8;
-		tsOy = tsY - 0x8;
-
-		if (tsOy == 0 && tsOy == 0)
-			return -1;
-
-		if (tsOx == 0)
-			return 180;
-
-		if (tsOy == 0)
-			return 90;
-
-		return 90 + to_degrees(atan(tsOy / tsOx));
-	}
-	else if (tsX < 0x8 && tsY > 0x8)
-	{
-		// Q3
-		Serial.println(" Q3 ");
-		tsOx = 0x8 - tsX;
-		tsOy = tsY - 0x8;
-
-		return 180 + to_degrees(atan(tsOx / tsOy));
-	}
-	else if (tsX <= 0x8 && tsY <= 0x8)
-	{
-		// Q4
-		Serial.println(" Q4 ");
-		tsOx = 0x8 - tsX;
-		tsOy = 0x8 - tsY;
-
-		if (tsOy == 0 || tsOy == 0)
-			return 270;
-
-		return 360 - to_degrees(atan(tsOx / tsOy));
-	}
-}
+//*****************************************************************************/
+// Mode transition functions 
+//*****************************************************************************/
 
 int GetCurrentMode(int currentMode, bool mode1, bool mode2, bool mode3)
 {
@@ -758,37 +679,31 @@ int GetCurrentMode(int currentMode, bool mode1, bool mode2, bool mode3)
 
 void GetModeTransition(int oldMode, int newMode)
 {
-	Serial.print(" oldMode ");
-	Serial.print(oldMode);
-	Serial.print(" newMode ");
-	Serial.print(newMode);
-
 	if (oldMode == 1 && newMode == 2)
 	{
-		Serial.print(" ONETOTWO ");
 		modetransition = ONETOTWO;
 	}
 	else if (oldMode == 2 && newMode == 3)
 	{
-		Serial.print(" TWOTOTHREE ");
 		modetransition = TWOTOTHREE;
 	}
 	else if (oldMode == 3 && newMode == 2)
 	{
-		Serial.print(" THREETOTWO ");
 		modetransition = THREETOTWO;
 	}
 	else if (oldMode == 2 && newMode == 1)
 	{
-		Serial.print(" TWOTOONE ");
 		modetransition = TWOTOONE;
 	}
 	else
 	{
-		Serial.print(" NONE ");
 		modetransition = NONE;
 	}
 }
+
+//************************************************************************************************/
+// Index trim axes to bucket
+//************************************************************************************************/
 
 int GetAxisBucket(uint8_t axisValue, int numberOfBuckets)
 {
@@ -806,3 +721,74 @@ int GetAxisBucket(uint8_t axisValue, int numberOfBuckets)
 	// if at the maximum value
 	return numberOfBuckets;
 }
+
+/************************************************************************************************/
+/* The following functions are only used if setting the thumbstick to a POV rather than two axes */
+/************************************************************************************************/
+/*
+inline void setThumbstickPOV(const GamePadEventData *evt)
+{
+// This will map the thumbstick to a POV rather than two axes
+uint8_t tsY = evt->b15 >> 4;
+uint8_t tsX = evt->b15 & 0xF;
+
+int tsAngle = getAngle(tsX, tsY);
+
+Joystick.hat(2, tsAngle);
+}
+
+inline double to_degrees(double radians) {
+return radians*(180.0 / M_PI);
+}
+
+int getAngle(uint8_t tsX, uint8_t tsY)
+{
+int tsOx;
+int tsOy;
+
+if (tsX > 0x8 && tsY < 0x8)
+{
+tsOx = tsX - 0x8;
+tsOy = 0x8 - tsY;
+
+if (tsOy == 0)
+return 90;
+
+return to_degrees(atan(tsOx / tsOy));
+}
+else if (tsX >= 0x8 && tsY >= 0x8)
+{
+tsOx = tsX - 0x8;
+tsOy = tsY - 0x8;
+
+if (tsOy == 0 && tsOy == 0)
+return -1;
+
+if (tsOx == 0)
+return 180;
+
+if (tsOy == 0)
+return 90;
+
+return 90 + to_degrees(atan(tsOy / tsOx));
+}
+else if (tsX < 0x8 && tsY > 0x8)
+{
+tsOx = 0x8 - tsX;
+tsOy = tsY - 0x8;
+
+return 180 + to_degrees(atan(tsOx / tsOy));
+}
+else if (tsX <= 0x8 && tsY <= 0x8)
+{
+tsOx = 0x8 - tsX;
+tsOy = 0x8 - tsY;
+
+if (tsOy == 0 || tsOy == 0)
+return 270;
+
+return 360 - to_degrees(atan(tsOx / tsOy));
+}
+}
+*/
+

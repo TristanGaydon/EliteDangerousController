@@ -8,21 +8,21 @@
 //   The USB data provided by the Saitek X52 Pro
 // **************************************************************
 //			1		2		4		8		16		32		64		128
-// Byte 0	X		X		X		X		X		X		X		X
-// Byte 1	X		X		Y		Y		Y		Y		Y		Y
-// Byte 2	Y		Y		Y		Y		Padding	Padding	RZ		RZ
-// Byte 3	RZ		RZ		RZ		RZ		RZ		RZ		RZ		RZ
-// Byte 4	DZ		DZ		DZ		DZ		DZ		DZ		DZ		DZ
-// Byte 5	RX		RX		RX		RX		RX		RX		RX		RX
-// Byte 6	RY		RY		RY		RY		RY		RY		RY		RY
-// Byte 7	S0		S0		S0		S0		S0		S0		S0		S0
-// Byte 8	Button	Button	Button	Button	Button	Button	Button	Button
+// Byte 1	X		X		X		X		X		X		X		X
+// Byte 2	X		X		Y		Y		Y		Y		Y		Y
+// Byte 3	Y		Y		Y		Y		Padding	Padding	RZ		RZ
+// Byte 4	RZ		RZ		RZ		RZ		RZ		RZ		RZ		RZ
+// Byte 5	DZ		DZ		DZ		DZ		DZ		DZ		DZ		DZ
+// Byte 6	RX		RX		RX		RX		RX		RX		RX		RX
+// Byte 7	RY		RY		RY		RY		RY		RY		RY		RY
+// Byte 8	S0		S0		S0		S0		S0		S0		S0		S0
 // Byte 9	Button	Button	Button	Button	Button	Button	Button	Button
 // Byte 10	Button	Button	Button	Button	Button	Button	Button	Button
 // Byte 11	Button	Button	Button	Button	Button	Button	Button	Button
-// Byte 12	Button	Button	Button	Button	Button	Button	Button	Padding
-// Byte 13	Padding	Padding	Padding	Padding	Hat		Hat		Hat		Hat
-// Byte 14	moveR/L	moveR/L	moveR/L	moveR/L	moveu/d	moveu/d	moveu/d	moveu/d
+// Byte 12	Button	Button	Button	Button	Button	Button	Button	Button
+// Byte 13	Button	Button	Button	Button	Button	Button	Button	Padding
+// Byte 14	Padding	Padding	Padding	Padding	Hat		Hat		Hat		Hat
+// Byte 15	moveR/L	moveR/L	moveR/L	moveR/L	moveu/d	moveu/d	moveu/d	moveu/d
 
 struct GamePadEventData
 {

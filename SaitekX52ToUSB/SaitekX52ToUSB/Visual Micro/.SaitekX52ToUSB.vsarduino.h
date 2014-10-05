@@ -43,36 +43,29 @@ typedef unsigned char byte;
 extern "C" void __cxa_pure_virtual() {;}
 
 //
-void PrintDescriptors(uint8_t addr, UsbDevice *pdev);
-void PrintAllDescriptors(UsbDevice *pdev);
 //
-byte getdevdescr(byte addr, byte &num_conf, UsbDevice *pdev);
-void print_hex(int v, int num_places);
-void printProgStr(const prog_char str[]);
-inline uint16_t getX(const SaitekGamePadEventData *evt);
-inline uint16_t getY(const SaitekGamePadEventData *evt);
-inline uint16_t getZ(const SaitekGamePadEventData *evt);
-inline uint8_t getXRotate(const SaitekGamePadEventData *evt);
-inline uint8_t getYRotate(const SaitekGamePadEventData *evt);
-inline uint8_t getZRotate(const SaitekGamePadEventData *evt);
-inline uint8_t getSlider0(const SaitekGamePadEventData *evt);
-inline uint8_t getSlider1(const SaitekGamePadEventData *evt);
-inline void setButtons(const SaitekGamePadEventData *evt);
-inline void setModeTransition(const SaitekGamePadEventData *evt);
-inline void setIndexTrimButtons(const SaitekGamePadEventData *evt);
+inline uint16_t getX(const GamePadEventData *evt);
+inline uint16_t getY(const GamePadEventData *evt);
+inline uint16_t getZ(const GamePadEventData *evt);
+inline uint8_t getXRotate(const GamePadEventData *evt);
+inline uint8_t getYRotate(const GamePadEventData *evt);
+inline uint8_t getZRotate(const GamePadEventData *evt);
+inline uint8_t getSlider0(const GamePadEventData *evt);
+inline uint8_t getSlider1(const GamePadEventData *evt);
+inline void setButtons(const GamePadEventData *evt);
+inline void setModeTransition(const GamePadEventData *evt);
+inline void setIndexTrimButtons(const GamePadEventData *evt);
 inline void printDebug();
-inline void setPOV1(const SaitekGamePadEventData *evt);
-inline void setPOV2(const SaitekGamePadEventData *evt);
-inline void setPOV3(const SaitekGamePadEventData *evt);
+inline void setPOV1(const GamePadEventData *evt);
+inline void setPOV2(const GamePadEventData *evt);
+inline void setPOV3(const GamePadEventData *evt);
 int GetCurrentMode(int currentMode, bool mode1, bool mode2, bool mode3);
 void GetModeTransition(int oldMode, int newMode);
 int GetAxisBucket(uint8_t axisValue, int numberOfBuckets);
 
 #include "C:\Code\Arduino1.0.5\hardware\teensy\cores\teensy3\arduino.h"
-#include "C:\Code\EliteDangerousController\USBHub\USBHub.ino"
-#include "C:\Code\EliteDangerousController\USBHub\pgmstrings.h"
-#include "C:\Code\EliteDangerousController\USBHub\saitek_rptparser.cpp"
-#include "C:\Code\EliteDangerousController\USBHub\saitek_rptparser.h"
-#include "C:\Code\EliteDangerousController\USBHub\thrustmaster_rptparser.cpp"
-#include "C:\Code\EliteDangerousController\USBHub\thrustmaster_rptparser.h"
+#include "C:\Code\EliteDangerousController\SaitekX52ToUSB\SaitekX52ToUSB\SaitekToUSB.ino"
+#include "C:\Code\EliteDangerousController\SaitekX52ToUSB\SaitekX52ToUSB\SaitekToUSB.h"
+#include "C:\Code\EliteDangerousController\SaitekX52ToUSB\SaitekX52ToUSB\saitek_rptparser.cpp"
+#include "C:\Code\EliteDangerousController\SaitekX52ToUSB\SaitekX52ToUSB\saitek_rptparser.h"
 #endif
