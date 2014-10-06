@@ -230,10 +230,12 @@ byte getdevdescr(byte addr, byte &num_conf, UsbDevice *pdev)
 	}
 
 	// Useful for debugging IDs of attached devices
+	/*
 	Serial.print("Vendor: ");
 	Serial.print(buf.idVendor);
 	Serial.print("Product: ");
 	Serial.print(buf.idProduct);
+	*/
 
 	if (!foundThrustmaster)
 	{
@@ -298,15 +300,43 @@ void printProgStr(const prog_char str[])
 
 void ThrustmasterJoystickEvents::OnGamePadChanged(const ThrustmasterGamePadEventData *evt)
 {
-	Serial.println("Thrustmaster");
+	uint8_t y1 = evt->y1;
+	uint8_t y2 = evt->y2;
+	uint16_t y = ((uint16_t)y2 << 8) | y1;
+	y = y << 2;
 
+	uint8_t yshift = y >> 8;
+
+	Serial.print("Thrustmaster Y ");
+	PrintBin<uint16_t>(y, 0x80);
+	Serial.print(" ");
+	PrintBin<uint8_t>(yshift, 0x80);
+	Serial.print(" ");
+	Serial.print(yshift);
+	Serial.println("");
+
+	Joystick.Xrotate(yshift);	// Throttle
+	/*
 	// Joystick is actually rotated 90 degrees in current setup, so thrust is actually x not y
 	uint8_t x1 = evt->x1;
 	uint8_t x2 = evt->x2;
 	uint16_t x = ((uint16_t)x2 << 8) | x1;
-	x = x << 2;
+	
+	
+	// x = x >> 8;
 
-	Joystick.Xrotate(x);	// Throttle
+	uint8_t xshift = x >> 6;
+
+	Serial.print("Thrustmaster X ");
+	PrintBin<uint16_t>(x, 0x80);
+	Serial.print(" ");
+	PrintBin<uint8_t>(xshift, 0x80);
+	Serial.print(" ");
+	Serial.print(xshift);
+	Serial.println("");
+
+	Joystick.Xrotate(xshift);	// Throttle
+	*/
 
 	/*
 	uint8_t y1 = evt->y1;
@@ -361,7 +391,7 @@ void ThrustmasterJoystickEvents::OnGamePadChanged(const ThrustmasterGamePadEvent
 
 void SaitekJoystickEvents::OnGamePadChanged(const SaitekGamePadEventData *evt)
 {
-	Serial.println("Saitek");
+	// Serial.println("Saitek");
 
 	Joystick.X(getX(evt));				// Roll
 	Joystick.Y(getY(evt));				// Pitch
