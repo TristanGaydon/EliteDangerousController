@@ -1,0 +1,1 @@
+These need to be copied to C:\Code\Arduino1.0.5\hardware\teensy\cores\teensy3
