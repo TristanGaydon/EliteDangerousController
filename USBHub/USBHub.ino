@@ -13,6 +13,13 @@
 #define DEVADDR 1
 #define CONFVALUE 1
 
+
+/*
+Thrustmaster: Vendor 1103 Product: 45322
+Saitek new : Vendor: 2565 Product: 29201
+Saitek (original code): Vendor 1699 Product 1980
+*/
+
 USB     Usb;
 USBHub  Hub1(&Usb);
 
@@ -132,28 +139,29 @@ void setup()
 				ErrorMessage<uint8_t>(PSTR("SetReportParser"), 1);
 			*/
 
-
 			joysticksInitialized = true;
 
 			Serial.print("Hid 1 Vendor ");
 			Serial.print(Hid1.VID);
 			Serial.print("Hid 1 Product ");
 			Serial.print(Hid1.PID);
+			Serial.println("");
 
 			Serial.print("Hid 2 Vendor ");
 			Serial.print(Hid2.VID);
 			Serial.print("Hid 2 Product ");
 			Serial.print(Hid2.PID);
+			Serial.println("");
 
 			switch (Hid1.VID)
 			{
 				case 1103:
-					Serial.print("Hid 1: Saitek");
+					Serial.println("Hid 1: Thrustmaster");
 					if (!Hid1.SetReportParser(0, &Joy1))
 						ErrorMessage<uint8_t>(PSTR("SetReportParser"), 1);
 					break;
 				case 1699:
-					Serial.print("Hid 1: Thrustmaster");
+					Serial.println("Hid 1: Saitek");
 					if (!Hid1.SetReportParser(0, &Joy))
 						ErrorMessage<uint8_t>(PSTR("SetReportParser"), 1);
 					break;
@@ -161,16 +169,16 @@ void setup()
 
 			switch (Hid2.VID)
 			{
-			case 1103:
-				Serial.print("Hid 2: Saitek");
-				if (!Hid2.SetReportParser(0, &Joy1))
-					ErrorMessage<uint8_t>(PSTR("SetReportParser"), 1);
-				break;
-			case 1699:
-				Serial.print("Hid 2: Thrustmater");
-				if (!Hid2.SetReportParser(0, &Joy))
-					ErrorMessage<uint8_t>(PSTR("SetReportParser"), 1);
-				break;
+				case 1103:
+					Serial.println("Hid 2: Thrustmaster");
+					if (!Hid2.SetReportParser(0, &Joy1))
+						ErrorMessage<uint8_t>(PSTR("SetReportParser"), 1);
+					break;
+				case 1699:
+					Serial.println("Hid 2: Saitek");
+					if (!Hid2.SetReportParser(0, &Joy))
+						ErrorMessage<uint8_t>(PSTR("SetReportParser"), 1);
+					break;
 			}
 
 			Serial.println("Sticks Initialised");
@@ -221,12 +229,11 @@ byte getdevdescr(byte addr, byte &num_conf, UsbDevice *pdev)
 		return(rcode);
 	}
 
-	
+	// Useful for debugging IDs of attached devices
 	Serial.print("Vendor: ");
 	Serial.print(buf.idVendor);
 	Serial.print("Product: ");
 	Serial.print(buf.idProduct);
-	
 
 	if (!foundThrustmaster)
 	{
@@ -243,8 +250,7 @@ byte getdevdescr(byte addr, byte &num_conf, UsbDevice *pdev)
 
 	if (!foundSaitek)
 	{
-		// if (buf.idVendor == 0x06A3 && buf.idProduct == 0x0762)
-		if (buf.idVendor == 0xA05 && buf.idProduct == 0x7211)
+		if (buf.idVendor == 0x06A3 && buf.idProduct == 0x0762)
 		{
 			Serial.println("Found Saitek on address ");
 			print_hex(addr, 8);
@@ -355,6 +361,8 @@ void ThrustmasterJoystickEvents::OnGamePadChanged(const ThrustmasterGamePadEvent
 
 void SaitekJoystickEvents::OnGamePadChanged(const SaitekGamePadEventData *evt)
 {
+	Serial.println("Saitek");
+
 	Joystick.X(getX(evt));				// Roll
 	Joystick.Y(getY(evt));				// Pitch
 	Joystick.Z(getZ(evt));				// Yaw
