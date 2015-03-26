@@ -67,6 +67,8 @@ void setup()
 	if (!Hid.SetReportParser(0, &Joy))
 		ErrorMessage<uint8_t>(PSTR("SetReportParser"), 1);
 
+	// Mouse.begin();
+
 	Serial.print("Here ");
 }
 
@@ -159,6 +161,36 @@ void JoystickEvents::OnGamePadChanged(const GamePadEventData *evt)
 	setPOV2(evt);						// Joystick pov 2
 	setPOV3(evt);						// Throttle pov 3
 	// setPOV4(evt);					// Throttle thumbstick pov 4. Use setPOV4 if using the thumbstick as a POV rather than two axes
+
+
+	// Mouse
+	// read and scale the two axes:
+	int yrotate = getYRotate(evt);
+	int zrotate = getZRotate(evt);
+	int xReading = readAxis(getZRotate(evt));
+	int yReading = readAxis(getYRotate(evt));
+	
+	Serial.print("yRotate: ");
+	Serial.print(yrotate);
+	Serial.println("");
+	Serial.print("zRotate: ");
+	Serial.print(zrotate);
+	Serial.println("");
+
+	Serial.print("xReading: ");
+	Serial.print(yrotate);
+	Serial.println("");
+	Serial.print("zRotate: ");
+	Serial.print(yReading);
+	Serial.println("");
+
+	// if the mouse control state is active, move the mouse:
+	if (yrotate != 8 || zrotate != 8)
+	{
+		Mouse.begin();
+		Mouse.move(xReading, yReading, 0);
+		Mouse.end();
+	}
 
 	printDebug();
 }
@@ -407,6 +439,35 @@ void GetModeTransition(int oldMode, int newMode)
 	}
 }
 
+int readAxis(int thisAxis) {
+	
+	int center = 8;
+	int distance = thisAxis - center;
+	return distance;
+
+	/*
+	// http://arduino.cc/en/Tutorial/JoystickMouseControl
+	// read the analog input:
+	int range = 16;
+	
+	int center = range / 2;         // resting position value
+	int threshold = range / 4;      // resting threshold
+
+	// map the reading from the analog input range to the output range:
+	int reading = map(thisAxis, 0, 1023, 0, range);
+
+	// if the output reading is outside from the
+	// rest position threshold,  use it:
+	int distance = reading - center;
+
+	if (abs(distance) < threshold) {
+		distance = 0;
+	}
+
+	// return the distance for this axis:
+	return distance;
+	*/
+}
 
 
 /************************************************************************************************/

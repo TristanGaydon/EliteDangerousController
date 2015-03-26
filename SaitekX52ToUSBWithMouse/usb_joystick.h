@@ -77,7 +77,7 @@ class usb_joystick_class
 
 	void X(uint16_t val) {
 		if (val > 1023) val = 1023;
-		Serial.println(val);
+		
 		usb_joystick_data[4] = usb_joystick_data[4] & 0x0 | (val << 8) >> 8;
 		usb_joystick_data[5] = usb_joystick_data[5] & 0xFC | (val >> 8);
 
@@ -121,14 +121,14 @@ class usb_joystick_class
 	}
 
 	void Yrotate(uint8_t val) {
-		if (val > 15) val = 15;
-		usb_joystick_data[11] = usb_joystick_data[11] & 0xF0 | val;
+		if (val > 255) val = 255;
+		usb_joystick_data[11] = val;
 		if (!manual_mode) usb_joystick_send();
 	}
 
 	void Zrotate(uint8_t val) {
-		if (val > 15) val = 15;
-		usb_joystick_data[11] = (usb_joystick_data[11] & 0xF) | val << 4;
+		if (val > 255) val = 255;
+		usb_joystick_data[12] = val;
 		if (!manual_mode) usb_joystick_send();
 	}
 

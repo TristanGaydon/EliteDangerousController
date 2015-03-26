@@ -27,18 +27,12 @@
     <ClInclude Include="SaitekToUSB.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Arduino\hardware\teensy\cores\teensy3\usb_desc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\Arduino\hardware\teensy\cores\teensy3\usb_joystick.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="saitek_rptparser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Arduino\hardware\teensy\cores\teensy3\usb_desc.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Arduino\hardware\teensy\cores\teensy3\usb_joystick.c">

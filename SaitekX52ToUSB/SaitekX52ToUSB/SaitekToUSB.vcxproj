@@ -44,7 +44,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Code\Arduino\hardware\teensy\cores\teensy3;C:\Code\Arduino\hardware\teensy\cores\teensy3\utils;C:\Code\Arduino\hardware\teensy\cores\teensy3\avr;C:\Code\Arduino\libraries\spi4teensy3;C:\Code\Arduino\libraries\spi4teensy3\utility;C:\Code\Arduino\libraries\USBHostShield2;C:\Code\Arduino\libraries\USBHostShield2\utility;C:\Code\Arduino\libraries;C:\Code\Arduino\hardware\teensy\libraries;C:\Program Files (x86)\Visual Micro\Visual Micro for Arduino\Micro Platforms\default\debuggers;C:\Code\Teensy\Sketches\libraries;C:\Code\Arduino\hardware\tools\arm-none-eabi\arm-none-eabi\include;C:\Code\Arduino\hardware\tools\arm-none-eabi\arm-none-eabi\include;C:\Code\Arduino\hardware\tools\arm-none-eabi\lib\gcc\arm-none-eabi\4.7.2\include;C:\Code\Arduino\hardware\tools\arm-none-eabi\lib\gcc\arm-none-eabi\4.7.2\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Code\Arduino1.0.5\hardware\teensy\cores\teensy3;C:\Code\Arduino1.0.5\libraries\spi4teensy3;C:\Code\Arduino1.0.5\libraries\spi4teensy3\utility;C:\Code\Arduino1.0.5\libraries\USBHostShield2;C:\Code\Arduino1.0.5\libraries\USBHostShield2\utility;C:\Code\Arduino1.0.5\libraries;C:\Code\Arduino1.0.5\hardware\teensy\libraries;C:\Program Files (x86)\Visual Micro\Visual Micro for Arduino\Micro Platforms\default\debuggers;C:\Code\Teensy\Sketches\libraries;C:\Code\Arduino1.0.5\hardware\tools\arm-none-eabi\arm-none-eabi\include;C:\Code\Arduino1.0.5\hardware\tools\arm-none-eabi\arm-none-eabi\include;C:\Code\Arduino1.0.5\hardware\tools\arm-none-eabi\lib\gcc\arm-none-eabi\4.7.2\include;C:\Code\Arduino1.0.5\hardware\tools\arm-none-eabi\lib\gcc\arm-none-eabi\4.7.2\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>C:\Code\Teensy\Sketches\SaitekToUSB\Visual Micro\.SaitekToUSB.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
       <PreprocessorDefinitions>_VMDEBUG=1;ARDUINO=105;ARDUINO_MAIN;__AVR__;__avr__;F_CPU=96000000;USB_SERIAL_HID;LAYOUT_US_ENGLISH;__cplusplus;__MK20DX256__;TEENSYDUINO=118;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -73,14 +73,12 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\Arduino\hardware\teensy\cores\teensy3\usb_desc.h" />
     <ClInclude Include="..\..\..\Arduino\hardware\teensy\cores\teensy3\usb_joystick.h" />
     <ClInclude Include="SaitekToUSB.h" />
     <ClInclude Include="saitek_rptparser.h" />
     <ClInclude Include="Visual Micro\.SaitekToUSB.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Arduino\hardware\teensy\cores\teensy3\usb_desc.c" />
     <ClCompile Include="..\..\..\Arduino\hardware\teensy\cores\teensy3\usb_joystick.c" />
     <ClCompile Include="saitek_rptparser.cpp" />
   </ItemGroup>
