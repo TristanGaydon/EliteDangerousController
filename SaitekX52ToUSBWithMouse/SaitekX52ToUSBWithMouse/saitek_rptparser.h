@@ -1,0 +1,66 @@
+#if !defined(__HIDJOYSTICKRPTPARSER_H__)
+#define __HIDJOYSTICKRPTPARSER_H__
+
+#include <hid.h>
+
+
+// **************************************************************
+//   The USB data provided by the Saitek X52 Pro
+// **************************************************************
+//			1		2		4		8		16		32		64		128
+// Byte 1	X		X		X		X		X		X		X		X
+// Byte 2	X		X		Y		Y		Y		Y		Y		Y
+// Byte 3	Y		Y		Y		Y		Padding	Padding	RZ		RZ
+// Byte 4	RZ		RZ		RZ		RZ		RZ		RZ		RZ		RZ
+// Byte 5	DZ		DZ		DZ		DZ		DZ		DZ		DZ		DZ
+// Byte 6	RX		RX		RX		RX		RX		RX		RX		RX
+// Byte 7	RY		RY		RY		RY		RY		RY		RY		RY
+// Byte 8	S0		S0		S0		S0		S0		S0		S0		S0
+// Byte 9	Button	Button	Button	Button	Button	Button	Button	Button
+// Byte 10	Button	Button	Button	Button	Button	Button	Button	Button
+// Byte 11	Button	Button	Button	Button	Button	Button	Button	Button
+// Byte 12	Button	Button	Button	Button	Button	Button	Button	Button
+// Byte 13	Button	Button	Button	Button	Button	Button	Button	Padding
+// Byte 14	Padding	Padding	Padding	Padding	Hat		Hat		Hat		Hat
+// Byte 15	moveR/L	moveR/L	moveR/L	moveR/L	moveu/d	moveu/d	moveu/d	moveu/d
+
+struct GamePadEventData
+{
+	uint8_t b1;
+	uint8_t b2;
+	uint8_t b3;
+	uint8_t b4;
+	uint8_t b5;
+	uint8_t b6;
+	uint8_t b7;
+	uint8_t b8;
+	uint8_t b9;
+	uint8_t b10;
+	uint8_t b11;
+	uint8_t b12;
+	uint8_t b13;
+	uint8_t b14;
+	uint8_t b15;
+};
+
+class JoystickEvents
+{
+public:
+	virtual void OnGamePadChanged(const GamePadEventData *evt);
+};
+
+#define RPT_GAMEPAD_LEN	sizeof(GamePadEventData)/sizeof(uint8_t)
+
+class JoystickReportParser : public HIDReportParser
+{
+	JoystickEvents		*joyEvents;
+
+  uint8_t oldPad[RPT_GAMEPAD_LEN];
+
+public:
+	JoystickReportParser(JoystickEvents *evt);
+
+	virtual void Parse(HID *hid, bool is_rpt_id, uint8_t len, uint8_t *buf);
+};
+
+#endif // __HIDJOYSTICKRPTPARSER_H__
